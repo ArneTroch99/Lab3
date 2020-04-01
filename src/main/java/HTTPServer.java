@@ -65,7 +65,7 @@ public class HTTPServer implements Runnable {
 
 
             if (verbose) {
-                System.out.println("Received command " + command);
+                System.out.println("Received command: " + command);
             }
 
             if (!command.equals("balance")) {
