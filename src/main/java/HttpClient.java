@@ -1,6 +1,6 @@
 import java.net.*;
 import java.io.*;
-import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.*;
 
 class HttpClient{
 	
@@ -30,7 +30,7 @@ class HttpClient{
 		ObjectMapper mapper = new ObjectMapper();
 
 		// convert JSON string to `JsonNode`
-		JsonNode node = mapper.readTree(content);
+		JsonNode node = mapper.readTree(content.toString());
 		return node.toString();
 	}
 

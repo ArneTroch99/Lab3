@@ -3,9 +3,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Date;
 
-// The tutorial can be found just here on the SSaurel's Blog :
-// https://www.ssaurel.com/blog/create-a-simple-http-web-server-in-java
-// Each Client Connection will be managed in a dedicated Thread
 public class HTTPServer implements Runnable {
 
     static final String FILE_NOT_FOUND = "Files/404.json";
