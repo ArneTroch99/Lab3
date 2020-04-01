@@ -46,7 +46,7 @@ public class HTTPServer implements Runnable {
             }
 
             ServerSocket serverConnect = new ServerSocket(PORT);
-            System.out.println("Server started.\nListening for connections on port : " + PORT + " ...\n");
+            System.out.println("Server started.\nListening for connections on port: " + PORT + "...\n");
 
             // we listen until user halts server execution
             while (true) {
@@ -86,6 +86,7 @@ public class HTTPServer implements Runnable {
 
             // get first line of the request from the client
             String input = in.readLine();
+            System.out.println("Input: " + input);
             String[] splittedInput = input.split("/");
             String account = "";
             String amount = "";
@@ -96,7 +97,7 @@ public class HTTPServer implements Runnable {
                 balance = false;
                 account = splittedInput[1].split(" ")[0];
                 amount = splittedInput[2].split(" ")[0];
-                System.out.println("Changing balance for account " + account + "with " + amount);
+                System.out.println("Changing balance for account " + account + " with " + amount);
             } else {
                 System.out.println("Wrong input: " + input);
                 errorMessage(out, dataOut, "400", "Bad Request");
@@ -139,33 +140,16 @@ public class HTTPServer implements Runnable {
         threads--;
     }
 
-    private byte[] readFileData(File file, int fileLength) throws IOException {
-        FileInputStream fileIn = null;
-        byte[] fileData = new byte[fileLength];
-
-        try {
-            fileIn = new FileInputStream(file);
-            fileIn.read(fileData);
-        } finally {
-            if (fileIn != null)
-                fileIn.close();
-        }
-
-        return fileData;
-    }
-
-
     private void errorMessage(PrintWriter out, OutputStream dataOut, String errorCode, String errorMessage) throws IOException {
         System.out.println("Error while processing request! Error code and message: " + errorCode + " " + errorMessage);
         out.println("HTTP/1.1 " + errorCode + errorMessage);
         out.println("Server: Java HTTP Server from Arne");
         out.println("Date: " + new Date());
         out.println("Content-type: json");
+        String json = "{ \"Message\" : \"" + errorMessage + "\" }";
+        out.println("Content-length: " + json.getBytes().length);
         out.println();
         out.flush();
-
-        String json = "{ \"Message\" : \"" + errorMessage + "\"}";
-
 
         dataOut.write(json.getBytes(), 0, json.getBytes().length);
         dataOut.flush();
