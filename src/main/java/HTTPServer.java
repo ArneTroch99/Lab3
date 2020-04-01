@@ -8,12 +8,10 @@ import java.util.Date;
 // Each Client Connection will be managed in a dedicated Thread
 public class HTTPServer implements Runnable {
 
-    static final File WEB_ROOT = new File(".");
-    static final String DEFAULT_FILE = "index.html";
-    static final String FILE_NOT_FOUND = "404.html";
-    static final String METHOD_NOT_SUPPORTED = "not_supported.html";
+    static final String FILE_NOT_FOUND = "Files/404.json";
+    static final String METHOD_NOT_SUPPORTED = "Files/not_supported.json";
     // port to listen connection
-    static final int PORT = 80;
+    static final int PORT = 8080;
 
     // verbose mode
     static final boolean verbose = true;
@@ -54,7 +52,7 @@ public class HTTPServer implements Runnable {
         BufferedReader in = null;
         PrintWriter out = null;
         BufferedOutputStream dataOut = null;
-        String fileRequested = "Test.xml";
+        String fileRequested = "Files/Account1.json";
 
         try {
             // we read characters from the client via input stream on the socket
@@ -66,20 +64,20 @@ public class HTTPServer implements Runnable {
 
             // get first line of the request from the client
             String input = in.readLine();
-            String command = input.split("/")[1];
+            String command = input.split("/")[1].split(" ")[0];
+
 
             if (verbose) {
                 System.out.println("Received command " + command);
             }
 
-            // we support only GET and HEAD methods, we check
-            if (!command.equals("GET")) {
+            if (!command.equals("balance")) {
                 if (verbose) {
                     System.out.println("Unknown command! Sending empty file");
                 }
 
                 // we return the not supported file to the client
-                File file = new File(WEB_ROOT, METHOD_NOT_SUPPORTED);
+                File file = new File(METHOD_NOT_SUPPORTED);
                 int fileLength = (int) file.length();
                 String contentMimeType = "text/html";
                 //read content to return to client
@@ -100,9 +98,9 @@ public class HTTPServer implements Runnable {
             } else {
 
                 if (verbose){
-                    System.out.println("GET command! sending file " + fileRequested);
+                    System.out.println("Known command! sending file " + fileRequested);
                 }
-                File file = new File(WEB_ROOT, fileRequested);
+                File file = new File(fileRequested);
                 int fileLength = (int) file.length();
                 String content = getContentType(fileRequested);
 
@@ -173,13 +171,13 @@ public class HTTPServer implements Runnable {
     }
 
     private void fileNotFound(PrintWriter out, OutputStream dataOut, String fileRequested) throws IOException {
-        File file = new File(WEB_ROOT, FILE_NOT_FOUND);
+        File file = new File(FILE_NOT_FOUND);
         int fileLength = (int) file.length();
         String content = "text/html";
         byte[] fileData = readFileData(file, fileLength);
 
         out.println("HTTP/1.1 404 File Not Found");
-        out.println("Server: Java HTTP Server from SSaurel : 1.0");
+        out.println("Server: Java HTTP Server from Arne");
         out.println("Date: " + new Date());
         out.println("Content-type: " + content);
         out.println("Content-length: " + fileLength);
