@@ -109,7 +109,7 @@ public class HTTPServer implements Runnable {
                 File accountFile = new File(ACCOUNTFOLDER, account);
                 // File -and account- doesn't exist
                 if (accountFile.createNewFile()) {
-                    System.out.println("Account does not exist");
+                    System.out.println("Account " + account + " does not exist");
                     errorMessage(out, dataOut, "404", "Not Found");
                 } else {
                     // Returnen van de balance van een account
