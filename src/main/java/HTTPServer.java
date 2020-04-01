@@ -1,3 +1,5 @@
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -5,13 +7,15 @@ import java.util.Date;
 
 public class HTTPServer implements Runnable {
 
-    static final String FILE_NOT_FOUND = "Files/404.json";
-    static final String METHOD_NOT_SUPPORTED = "Files/not_supported.json";
+    private static final String ACCOUNTFOLDER = "Accounts";
+    private static final ObjectMapper mapper = new ObjectMapper();
     // port to listen connection
-    static final int PORT = 8080;
+    private static final int PORT = 8080;
 
     // verbose mode
-    static final boolean verbose = true;
+    private static final boolean verbose = true;
+
+    private static int threads = 0;
 
     // Client Connection via Socket Class
     private Socket connect;
@@ -22,6 +26,25 @@ public class HTTPServer implements Runnable {
 
     public static void main(String[] args) {
         try {
+
+            File directory = new File(ACCOUNTFOLDER);
+            if (!directory.exists()) {
+                directory.mkdir();
+            }
+
+            if (directory.createNewFile()) {
+                System.out.println("Creating accounts file...");
+                Account account1 = new Account("Siemen", 0, "Oosterveldaan 3", 17, "Lies");
+                Account account2 = new Account("Arne", 15000, "Korte kopstraat 70", 2, "Cassandra");
+                Account account3 = new Account("Gliesje", 15, "Oosterveldlaan 3", 50, "Yelena");
+
+                mapper.writeValue(new File(ACCOUNTFOLDER, "Siemen.json"), account1);
+                mapper.writeValue(new File(ACCOUNTFOLDER, "Arne.json"), account2);
+                mapper.writeValue(new File(ACCOUNTFOLDER, "Gliesje.json"), account3);
+            } else {
+                System.out.println("Accounts file already exists");
+            }
+
             ServerSocket serverConnect = new ServerSocket(PORT);
             System.out.println("Server started.\nListening for connections on port : " + PORT + " ...\n");
 
@@ -45,11 +68,11 @@ public class HTTPServer implements Runnable {
     }
 
     public void run() {
+        System.out.println("New thread, running threads: " + ++threads);
         // we manage our particular client connection
         BufferedReader in = null;
         PrintWriter out = null;
         BufferedOutputStream dataOut = null;
-        String fileRequested = "Files/Account1.json";
 
         try {
             // we read characters from the client via input stream on the socket
@@ -59,89 +82,61 @@ public class HTTPServer implements Runnable {
             // get binary output stream to client (for requested data)
             dataOut = new BufferedOutputStream(connect.getOutputStream());
 
+            boolean balance = true;
+
             // get first line of the request from the client
             String input = in.readLine();
-            String command = input.split("/")[1].split(" ")[0];
-
-
-            if (verbose) {
-                System.out.println("Received command: " + command);
+            String[] splittedInput = input.split("/");
+            String account = "";
+            String amount = "";
+            if (splittedInput.length == 2) {
+                account = splittedInput[1].split(" ")[0];
+                System.out.println("Sending information for account " + account);
+            } else if (splittedInput.length == 3) {
+                balance = false;
+                account = splittedInput[1].split(" ")[0];
+                amount = splittedInput[2].split(" ")[0];
+                System.out.println("Changing balance for account " + account + "with " + amount);
+            } else {
+                System.out.println("Wrong input: " + input);
+                errorMessage(out, dataOut, "400", "Bad Request");
             }
 
-            if (!command.equals("balance")) {
-                if (verbose) {
-                    System.out.println("Unknown command! Sending empty file");
-                }
-
-                // we return the not supported file to the client
-                File file = new File(METHOD_NOT_SUPPORTED);
-                int fileLength = (int) file.length();
-                String contentMimeType = "text/html";
-                //read content to return to client
-                byte[] fileData = readFileData(file, fileLength);
-
-                // we send HTTP Headers with data to client
-                out.println("HTTP/1.1 501 Not Implemented");
-                out.println("Server: Java HTTP Server from Arne");
-                out.println("Date: " + new Date());
-                out.println("Content-type: " + contentMimeType);
-                out.println("Content-length: " + fileLength);
-                out.println(); // blank line between headers and content, very important !
-                out.flush(); // flush character output stream buffer
-                // file
-                dataOut.write(fileData, 0, fileLength);
-                dataOut.flush();
-
+            File accountFile = new File(ACCOUNTFOLDER, account);
+            // File -and account- doesn't exist
+            if (accountFile.createNewFile()) {
+                System.out.println("Account does not exist");
+                errorMessage(out, dataOut, "404", "Not Found");
             } else {
 
-                if (verbose){
-                    System.out.println("Known command! sending file " + fileRequested);
+                // Returnen van de balance van een account
+                if (balance) {
+                    Account accountClass = mapper.readValue(accountFile, Account.class);
+                    out.println("HTTP/1.1 200 OK");
+                    out.println("Server: Java HTTP Server from Arne");
+                    out.println("Date: " + new Date());
+                    out.println("Content-type: json");
+                    // out.println("Content-length: ");
+                    out.println(); // blank line between headers and content, very important !
+                    out.flush(); // flush character output stream buffer
+                    mapper.writeValue(dataOut, accountClass);
+                    dataOut.flush();
+                } else {
+                    Account accountClass = mapper.readValue(accountFile, Account.class);
+                    if (amount.charAt(0) == '-') {
+                        accountClass.setBalance(accountClass.getBalance() - Integer.parseInt(amount.replaceAll("\\D+", "")));
+                    } else if (amount.charAt(0) == '+') {
+                        accountClass.setBalance(accountClass.getBalance() + Integer.parseInt(amount.replaceAll("\\D+", "")));
+                    } else {
+                        errorMessage(out, dataOut, "400", "Bad Request");
+                    }
+                    mapper.writeValue(accountFile, accountClass);
                 }
-                File file = new File(fileRequested);
-                int fileLength = (int) file.length();
-                String content = getContentType(fileRequested);
-
-                byte[] fileData = readFileData(file, fileLength);
-
-                // send HTTP Headers
-                out.println("HTTP/1.1 200 OK");
-                out.println("Server: Java HTTP Server from Arne");
-                out.println("Date: " + new Date());
-                out.println("Content-type: " + content);
-                out.println("Content-length: " + fileLength);
-                out.println(); // blank line between headers and content, very important !
-                out.flush(); // flush character output stream buffer
-
-                dataOut.write(fileData, 0, fileLength);
-                dataOut.flush();
-
             }
-
-        } catch (FileNotFoundException fnfe) {
-            try {
-                fileNotFound(out, dataOut, fileRequested);
-            } catch (IOException ioe) {
-                System.err.println("Error with file not found exception : " + ioe.getMessage());
-            }
-
-        } catch (IOException ioe) {
-            System.err.println("Server error : " + ioe);
-        } finally {
-            try {
-                in.close();
-                out.close();
-                dataOut.close();
-                connect.close(); // we close socket connection
-            } catch (Exception e) {
-                System.err.println("Error closing stream : " + e.getMessage());
-            }
-
-            if (verbose) {
-                System.out.println("Connection closed.\n");
-            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-
+        threads--;
     }
 
     private byte[] readFileData(File file, int fileLength) throws IOException {
@@ -159,34 +154,20 @@ public class HTTPServer implements Runnable {
         return fileData;
     }
 
-    // return supported MIME Types
-    private String getContentType(String fileRequested) {
-        if (fileRequested.endsWith(".htm") || fileRequested.endsWith(".html"))
-            return "text/html";
-        else
-            return "text/plain";
-    }
 
-    private void fileNotFound(PrintWriter out, OutputStream dataOut, String fileRequested) throws IOException {
-        File file = new File(FILE_NOT_FOUND);
-        int fileLength = (int) file.length();
-        String content = "text/html";
-        byte[] fileData = readFileData(file, fileLength);
-
-        out.println("HTTP/1.1 404 File Not Found");
+    private void errorMessage(PrintWriter out, OutputStream dataOut, String errorCode, String errorMessage) throws IOException {
+        System.out.println("Error while processing request! Error code and message: " + errorCode + " " + errorMessage);
+        out.println("HTTP/1.1 " + errorCode + errorMessage);
         out.println("Server: Java HTTP Server from Arne");
         out.println("Date: " + new Date());
-        out.println("Content-type: " + content);
-        out.println("Content-length: " + fileLength);
-        out.println(); // blank line between headers and content, very important !
-        out.flush(); // flush character output stream buffer
+        out.println("Content-type: json");
+        out.println();
+        out.flush();
 
-        dataOut.write(fileData, 0, fileLength);
+        String json = "{ \"Message\" : \"" + errorMessage + "\"}";
+
+
+        dataOut.write(json.getBytes(), 0, json.getBytes().length);
         dataOut.flush();
-
-        if (verbose) {
-            System.out.println("File " + fileRequested + " not found");
-        }
     }
-
 }

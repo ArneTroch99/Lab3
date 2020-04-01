@@ -33,4 +33,24 @@ public class Account {
     public String getPartner() {
         return partner;
     }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setBalance(int balance) {
+        this.balance = balance;
+    }
+
+    public void setAdress(String adress) {
+        this.adress = adress;
+    }
+
+    public void setChildren(int children) {
+        this.children = children;
+    }
+
+    public void setPartner(String partner) {
+        this.partner = partner;
+    }
 }
