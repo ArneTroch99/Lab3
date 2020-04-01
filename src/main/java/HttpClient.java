@@ -1,10 +1,10 @@
 import java.net.*;
 import java.io.*;
+import com.fasterxml.jackson.core.JsonParser;
 
 class HttpClient{
 	
 	private HttpURLConnection con;
-
 	public void openConnection(String adress) throws Exception{
 	
 		URL url = new URL(adress);
@@ -15,15 +15,23 @@ class HttpClient{
 	}
 
 	public String getResponse() throws Exception{
+		
 		BufferedReader in = new BufferedReader(
   		new InputStreamReader(con.getInputStream()));
 		String inputLine;
 		StringBuffer content = new StringBuffer();
+		
 		while ((inputLine = in.readLine()) != null) {
     		content.append(inputLine);
 		}
+		
 		in.close();
-		return content.toString();
+		// create object mapper instance
+		ObjectMapper mapper = new ObjectMapper();
+
+		// convert JSON string to `JsonNode`
+		JsonNode node = mapper.readTree(content);
+		return node.toString();
 	}
 
 	public void closeConnection() throws Exception{
