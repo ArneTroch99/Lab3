@@ -115,7 +115,7 @@ public class HTTPServer implements Runnable {
                     // Returnen van de balance van een account
                     if (balance) {
                         System.out.println("Sending account information for account: " + accountFile.getPath());
-                        Account accountClass = mapper.readValue(new FileInputStream(accountFile), Account.class);
+                        Account accountClass = mapper.readValue(new FileInputStream(accountFile).toString(), Account.class);
                         out.println("HTTP/1.1 200 OK");
                         out.println("Server: Java HTTP Server from Arne");
                         out.println("Date: " + new Date());
