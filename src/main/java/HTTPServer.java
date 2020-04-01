@@ -27,7 +27,7 @@ public class HTTPServer implements Runnable {
     public static void main(String[] args) {
         try {
 
-            File directory = new File(ACCOUNTFOLDER);
+            /*File directory = new File(ACCOUNTFOLDER);
             if (!directory.exists()) {
                 directory.mkdir();
             }
@@ -43,7 +43,7 @@ public class HTTPServer implements Runnable {
                 mapper.writeValue(new File(ACCOUNTFOLDER, "Gliesje.json"), account3);
             } else {
                 System.out.println("Accounts file already exists");
-            }
+            }*/
 
             ServerSocket serverConnect = new ServerSocket(PORT);
             System.out.println("Server started.\nListening for connections on port: " + PORT + "...\n");
@@ -87,16 +87,17 @@ public class HTTPServer implements Runnable {
             // get first line of the request from the client
             String input = in.readLine();
             System.out.println("Input: " + input);
-            String[] splittedInput = input.split("/");
+            String[] split1 = input.split(" ");
+            String[] split2 = split1[0].split("/");
             String account = "";
             String amount = "";
-            if (splittedInput.length == 2) {
-                account = splittedInput[1].split(" ")[0];
+            if (split2.length == 2) {
+                account = split2[1].split(" ")[0];
                 System.out.println("Sending information for account " + account);
-            } else if (splittedInput.length == 3) {
+            } else if (split2.length == 3) {
                 balance = false;
-                account = splittedInput[1].split(" ")[0];
-                amount = splittedInput[2].split(" ")[0];
+                account = split2[1].split(" ")[0];
+                amount = split2[2].split(" ")[0];
                 System.out.println("Changing balance for account " + account + " with " + amount);
             } else {
                 System.out.println("Wrong input: " + input);
