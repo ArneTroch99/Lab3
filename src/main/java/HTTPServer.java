@@ -94,12 +94,10 @@ public class HTTPServer implements Runnable {
             String amount = "";
             if (split2.length == 2) {
                 account = split2[1].split(" ")[0];
-                System.out.println("Sending information for account " + account);
             } else if (split2.length == 3) {
                 balance = false;
                 account = split2[1].split(" ")[0];
                 amount = split2[2].split(" ")[0];
-                System.out.println("Changing balance for account " + account + " with " + amount);
             } else {
                 System.out.println("Wrong input: " + input);
                 errorMessage(out, dataOut, "400", "Bad Request");
@@ -107,6 +105,7 @@ public class HTTPServer implements Runnable {
             }
 
             if (goodRequest) {
+                account = account + ".json";
                 File accountFile = new File(ACCOUNTFOLDER, account);
                 // File -and account- doesn't exist
                 if (accountFile.createNewFile()) {
@@ -115,6 +114,7 @@ public class HTTPServer implements Runnable {
                 } else {
                     // Returnen van de balance van een account
                     if (balance) {
+                        System.out.println("Sending account information for account: " + account.split(".")[0]);
                         Account accountClass = mapper.readValue(accountFile, Account.class);
                         out.println("HTTP/1.1 200 OK");
                         out.println("Server: Java HTTP Server from Arne");
@@ -126,6 +126,7 @@ public class HTTPServer implements Runnable {
                         mapper.writeValue(dataOut, accountClass);
                         dataOut.flush();
                     } else {
+                        System.out.println("Changing balance of account " + account.split(".")[0] + "with " + amount);
                         Account accountClass = mapper.readValue(accountFile, Account.class);
                         if (amount.charAt(0) == '-') {
                             accountClass.setBalance(accountClass.getBalance() - Integer.parseInt(amount.replaceAll("\\D+", "")));
