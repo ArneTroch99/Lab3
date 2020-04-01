@@ -83,12 +83,13 @@ public class HTTPServer implements Runnable {
             dataOut = new BufferedOutputStream(connect.getOutputStream());
 
             boolean balance = true;
+            boolean goodRequest = true;
 
             // get first line of the request from the client
             String input = in.readLine();
             System.out.println("Input: " + input);
             String[] split1 = input.split(" ");
-            String[] split2 = split1[0].split("/");
+            String[] split2 = split1[1].split("/");
             String account = "";
             String amount = "";
             if (split2.length == 2) {
@@ -102,37 +103,39 @@ public class HTTPServer implements Runnable {
             } else {
                 System.out.println("Wrong input: " + input);
                 errorMessage(out, dataOut, "400", "Bad Request");
+                goodRequest = false;
             }
 
-            File accountFile = new File(ACCOUNTFOLDER, account);
-            // File -and account- doesn't exist
-            if (accountFile.createNewFile()) {
-                System.out.println("Account does not exist");
-                errorMessage(out, dataOut, "404", "Not Found");
-            } else {
-
-                // Returnen van de balance van een account
-                if (balance) {
-                    Account accountClass = mapper.readValue(accountFile, Account.class);
-                    out.println("HTTP/1.1 200 OK");
-                    out.println("Server: Java HTTP Server from Arne");
-                    out.println("Date: " + new Date());
-                    out.println("Content-type: json");
-                    // out.println("Content-length: ");
-                    out.println(); // blank line between headers and content, very important !
-                    out.flush(); // flush character output stream buffer
-                    mapper.writeValue(dataOut, accountClass);
-                    dataOut.flush();
+            if (goodRequest) {
+                File accountFile = new File(ACCOUNTFOLDER, account);
+                // File -and account- doesn't exist
+                if (accountFile.createNewFile()) {
+                    System.out.println("Account does not exist");
+                    errorMessage(out, dataOut, "404", "Not Found");
                 } else {
-                    Account accountClass = mapper.readValue(accountFile, Account.class);
-                    if (amount.charAt(0) == '-') {
-                        accountClass.setBalance(accountClass.getBalance() - Integer.parseInt(amount.replaceAll("\\D+", "")));
-                    } else if (amount.charAt(0) == '+') {
-                        accountClass.setBalance(accountClass.getBalance() + Integer.parseInt(amount.replaceAll("\\D+", "")));
+                    // Returnen van de balance van een account
+                    if (balance) {
+                        Account accountClass = mapper.readValue(accountFile, Account.class);
+                        out.println("HTTP/1.1 200 OK");
+                        out.println("Server: Java HTTP Server from Arne");
+                        out.println("Date: " + new Date());
+                        out.println("Content-type: json");
+                        // out.println("Content-length: ");
+                        out.println(); // blank line between headers and content, very important !
+                        out.flush(); // flush character output stream buffer
+                        mapper.writeValue(dataOut, accountClass);
+                        dataOut.flush();
                     } else {
-                        errorMessage(out, dataOut, "400", "Bad Request");
+                        Account accountClass = mapper.readValue(accountFile, Account.class);
+                        if (amount.charAt(0) == '-') {
+                            accountClass.setBalance(accountClass.getBalance() - Integer.parseInt(amount.replaceAll("\\D+", "")));
+                        } else if (amount.charAt(0) == '+') {
+                            accountClass.setBalance(accountClass.getBalance() + Integer.parseInt(amount.replaceAll("\\D+", "")));
+                        } else {
+                            errorMessage(out, dataOut, "400", "Bad Request");
+                        }
+                        mapper.writeValue(accountFile, accountClass);
                     }
-                    mapper.writeValue(accountFile, accountClass);
                 }
             }
         } catch (IOException e) {
