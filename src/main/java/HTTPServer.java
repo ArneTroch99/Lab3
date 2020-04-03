@@ -107,13 +107,12 @@ public class HTTPServer implements Runnable {
                         }
 
                         int i = 0;
-                        while (content.charAt(i) != '{') {
-                            i++;
-                        }
-
                         try {
+                            while (content.charAt(i) != '{') {
+                                i++;
+                            }
                             System.out.println(content.toString().substring(i));
-                        } catch (StringIndexOutOfBoundsException e){
+                        } catch (Exception e){
                             System.out.println(content);
                             errorMessage(out, dataOut, "400", "Bad Request");
                         }
