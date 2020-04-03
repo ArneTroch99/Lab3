@@ -6,13 +6,13 @@ public class Account {
     private int children;
     private String partner;
 
-    
-    public Account(){
-	name = "test";
-	balance = 0;
-	adress = "test";
-	children = 0;
-	partner = "test";
+
+    public Account() {
+        name = "test";
+        balance = 0;
+        adress = "test";
+        children = 0;
+        partner = "test";
     }
 
     public Account(String name, int balance, String adress, int children, String partner) {
@@ -27,36 +27,36 @@ public class Account {
         return name;
     }
 
-    public int getBalance() {
-        return balance;
-    }
-
-    public String getAdress() {
-        return adress;
-    }
-
-    public int getChildren() {
-        return children;
-    }
-
-    public String getPartner() {
-        return partner;
-    }
-
     public void setName(String name) {
         this.name = name;
+    }
+
+    public int getBalance() {
+        return balance;
     }
 
     public void setBalance(int balance) {
         this.balance = balance;
     }
 
+    public String getAdress() {
+        return adress;
+    }
+
     public void setAdress(String adress) {
         this.adress = adress;
     }
 
+    public int getChildren() {
+        return children;
+    }
+
     public void setChildren(int children) {
         this.children = children;
+    }
+
+    public String getPartner() {
+        return partner;
     }
 
     public void setPartner(String partner) {

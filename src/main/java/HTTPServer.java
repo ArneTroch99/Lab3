@@ -15,6 +15,7 @@ public class HTTPServer implements Runnable {
     // verbose mode
     private static final boolean verbose = true;
 
+    // Keeping track of total amount of threads
     private static int threads = 0;
 
     // Client Connection via Socket Class
@@ -26,13 +27,12 @@ public class HTTPServer implements Runnable {
 
     public static void main(String[] args) {
         try {
-
+            System.out.println("Performing setup of server... ");
+            System.out.println("Checking existence of accounts folder");
             File directory = new File(ACCOUNTFOLDER);
             if (!directory.exists()) {
                 directory.mkdir();
-		System.out.println("Directory created");
-     
-                System.out.println("Creating accounts file...");
+                System.out.println("No accounts folder found! Creating new folder and files...");
                 Account account1 = new Account("Siemen", 0, "Oosterveldaan 3", 17, "Lies");
                 Account account2 = new Account("Arne", 15000, "Korte kopstraat 70", 2, "Cassandra");
                 Account account3 = new Account("Gliesje", 15, "Oosterveldlaan 3", 50, "Yelena");
@@ -40,17 +40,19 @@ public class HTTPServer implements Runnable {
                 mapper.writeValue(new File(ACCOUNTFOLDER, "/Siemen.json"), account1);
                 mapper.writeValue(new File(ACCOUNTFOLDER, "/Arne.json"), account2);
                 mapper.writeValue(new File(ACCOUNTFOLDER, "/Gliesje.json"), account3);
-	    }else{System.out.println("Directory already exists");}
+            } else {
+                System.out.println("Accounts folder found!");
+            }
             ServerSocket serverConnect = new ServerSocket(PORT);
-            System.out.println("Server started.\nListening for connections on port: " + PORT + "...\n");
+            System.out.println("Setup completed! Server started.\nListening for connections on port: " + PORT + "...\n");
 
             // we listen until user halts server execution
             while (true) {
                 HTTPServer myServer = new HTTPServer(serverConnect.accept());
 
                 if (verbose) {
-                    System.out.println("----------------------------------------------------");
-                    System.out.println("Connection opened. (" + new Date() + ")");
+                    System.out.println("\n----------------------------------------------------");
+                    System.out.println("New connection opened. (" + new Date() + ")");
                 }
 
                 // create dedicated thread to manage the client connection
@@ -64,11 +66,11 @@ public class HTTPServer implements Runnable {
     }
 
     public void run() {
-        System.out.println("New thread, running threads: " + ++threads);
+        System.out.println("Starting new thread for connection from " + connect.getInetAddress() + ". Total running threads: " + ++threads);
         // we manage our particular client connection
-        BufferedReader in = null;
-        PrintWriter out = null;
-        BufferedOutputStream dataOut = null;
+        BufferedReader in;
+        PrintWriter out;
+        BufferedOutputStream dataOut;
 
         try {
             // we read characters from the client via input stream on the socket
@@ -103,7 +105,7 @@ public class HTTPServer implements Runnable {
             if (goodRequest) {
                 account = account + ".json";
                 File accountFile = new File(ACCOUNTFOLDER, account);
-                // File -and account- doesn't exist
+                // File - and account - doesn't exist
                 if (accountFile.createNewFile()) {
                     System.out.println("Account " + account + " does not exist");
                     errorMessage(out, dataOut, "404", "Not Found");
@@ -117,9 +119,8 @@ public class HTTPServer implements Runnable {
                         out.println("Server: Java HTTP Server from Arne");
                         out.println("Date: " + new Date());
                         out.println("Content-type: json");
-                        // out.println("Content-length: ");
-                        out.println(); // blank line between headers and content, very important !
-                        out.flush(); // flush character output stream buffer
+                        out.println();
+                        out.flush();
                         mapper.writeValue(dataOut, accountClass);
                         dataOut.flush();
                     } else {
@@ -149,7 +150,6 @@ public class HTTPServer implements Runnable {
         out.println("Date: " + new Date());
         out.println("Content-type: json");
         String json = "{ \"Message\" : \"" + errorMessage + "\" }";
-        out.println("Content-length: " + json.getBytes().length);
         out.println();
         out.flush();
 
