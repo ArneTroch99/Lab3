@@ -2,7 +2,6 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.*;
-import java.net.HttpURLConnection;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Date;
@@ -108,7 +107,7 @@ public class HTTPServer implements Runnable {
                         }
 
                         int i = 0;
-                        while(content.charAt(i) != '{'){
+                        while (content.charAt(i) != '{') {
                             i++;
                         }
 
@@ -116,15 +115,15 @@ public class HTTPServer implements Runnable {
 
                         try {
                             Account account = mapper.readValue(content.toString().substring(i), Account.class);
-                            infoAdd(out, account);
-                        } catch (JsonParseException e ){
-                            errorMessage(out, "400", "Bad Request");
+                            infoAdd(out, dataOut, account);
+                        } catch (JsonParseException e) {
+                            errorMessage(out, dataOut, "400", "Bad Request");
                         }
                     }
 
                     break;
                 default:
-                    errorMessage(out, "400", "Bad Request");
+                    errorMessage(out, dataOut, "400", "Bad Request");
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -132,7 +131,7 @@ public class HTTPServer implements Runnable {
         threads--;
     }
 
-    private void errorMessage(PrintWriter out, String errorCode, String errorMessage) {
+    private void errorMessage(PrintWriter out, OutputStream dataOut, String errorCode, String errorMessage) {
         System.out.println("Error while processing request! Error code and message: " + errorCode + " " + errorMessage);
         out.println("HTTP/1.1 " + errorCode + errorMessage);
         out.println("Server: Java HTTP Server from Arne");
@@ -140,13 +139,18 @@ public class HTTPServer implements Runnable {
         out.println("Content-type: json");
         out.println();
         out.flush();
+        try {
+            dataOut.write(0xFF);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void infoInput(PrintWriter out, OutputStream dataOut, String account) {
         File accountFile = new File(ACCOUNTFOLDER, account);
-        if (validAccount(out, accountFile)) {
+        if (validAccount(out, dataOut, accountFile)) {
             try {
-                while (usedFiles.contains(account)){
+                while (usedFiles.contains(account)) {
                     System.out.println("Account " + account + " is already in use by another thread!");
                     Thread.sleep(20);
                 }
@@ -174,9 +178,9 @@ public class HTTPServer implements Runnable {
 
     private void infoChangeBalance(PrintWriter out, OutputStream dataOut, String account, String amount) {
         File accountFile = new File(ACCOUNTFOLDER, account);
-        if (validAccount(out, accountFile)) {
+        if (validAccount(out, dataOut, accountFile)) {
             try {
-                while (usedFiles.contains(account)){
+                while (usedFiles.contains(account)) {
                     System.out.println("Account " + account + " is already in use by another thread!");
                     Thread.sleep(20);
                 }
@@ -189,7 +193,7 @@ public class HTTPServer implements Runnable {
                 } else if (amount.charAt(0) == '+') {
                     accountClass.setBalance(accountClass.getBalance() + Integer.parseInt(amount.replaceAll("\\D+", "")));
                 } else {
-                    errorMessage(out,"400", "Bad Request");
+                    errorMessage(out, dataOut, "400", "Bad Request");
                 }
                 mapper.writeValue(accountFile, accountClass);
                 out.println("HTTP/1.1 200 OK");
@@ -207,10 +211,11 @@ public class HTTPServer implements Runnable {
         }
     }
 
-    private void infoAdd(PrintWriter out, Account account) {
+    private void infoAdd(PrintWriter out, OutputStream dataOut, Account account) {
         File accountFile = new File(ACCOUNTFOLDER, account.getName() + ".json");
         if (!accountFile.isFile()) {
             try {
+                System.out.println();
                 mapper.writeValue(accountFile, account);
                 out.println("HTTP/1.1 200 OK");
                 out.println("Server: Java HTTP Server from Arne");
@@ -222,14 +227,14 @@ public class HTTPServer implements Runnable {
                 e.printStackTrace();
             }
         } else {
-            errorMessage(out,"409", "Conflict");
+            errorMessage(out, dataOut, "409", "Conflict");
         }
     }
 
-    private boolean validAccount(PrintWriter out, File accountFile) {
+    private boolean validAccount(PrintWriter out, OutputStream dataOut, File accountFile) {
         if (!accountFile.isFile()) {
             System.out.println("Account " + accountFile.getName() + " does not exist");
-            errorMessage(out,"404", "Not Found");
+            errorMessage(out, dataOut, "404", "Not Found");
             return false;
         } else {
             return true;
