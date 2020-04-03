@@ -111,14 +111,11 @@ public class HTTPServer implements Runnable {
                                 i++;
                             }
                             System.out.println(content.toString().substring(i));
-                        } catch (Exception e) {
-                            System.out.println("Input: " + content);
-                            errorMessage(out, dataOut, "400", "Bad Request");
-                        }
-
-                        try {
                             Account account = mapper.readValue(content.toString().substring(i), Account.class);
                             infoAdd(out, dataOut, account);
+                        } catch (StringIndexOutOfBoundsException e) {
+                            System.out.println("Input: " + content);
+                            errorMessage(out, dataOut, "400", "Bad Request");
                         } catch (JsonParseException e) {
                             errorMessage(out, dataOut, "400", "Bad Request");
                         }
