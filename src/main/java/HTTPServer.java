@@ -136,7 +136,7 @@ public class HTTPServer implements Runnable {
         out.println("HTTP/1.1 " + errorCode + errorMessage);
         out.println("Server: Java HTTP Server from Arne");
         out.println("Date: " + new Date());
-        out.println("Content-type: json");
+        out.println("Content-type: text/plain");
         out.println();
         out.flush();
         try {
@@ -200,7 +200,7 @@ public class HTTPServer implements Runnable {
                 out.println("HTTP/1.1 200 OK");
                 out.println("Server: Java HTTP Server from Arne");
                 out.println("Date: " + new Date());
-                out.println("Content-type: json");
+                out.println("Content-type: text/plain");
                 out.println();
                 out.flush();
                 usedFiles.remove(account);
@@ -223,7 +223,7 @@ public class HTTPServer implements Runnable {
                 out.println("HTTP/1.1 200 OK");
                 out.println("Server: Java HTTP Server from Arne");
                 out.println("Date: " + new Date());
-                out.println("Content-type: json");
+                out.println("Content-type: text/plain");
                 out.println();
                 out.flush();
                 dataOut.write(0xFF);
