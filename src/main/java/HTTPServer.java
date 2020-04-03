@@ -141,6 +141,7 @@ public class HTTPServer implements Runnable {
         out.flush();
         try {
             dataOut.write(0xFF);
+            dataOut.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -203,6 +204,8 @@ public class HTTPServer implements Runnable {
                 out.println();
                 out.flush();
                 usedFiles.remove(account);
+                dataOut.write(0xFF);
+                dataOut.flush();
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (InterruptedException e) {
@@ -215,7 +218,7 @@ public class HTTPServer implements Runnable {
         File accountFile = new File(ACCOUNTFOLDER, account.getName() + ".json");
         if (!accountFile.isFile()) {
             try {
-                System.out.println();
+                System.out.println("Adding account " + account.getName());
                 mapper.writeValue(accountFile, account);
                 out.println("HTTP/1.1 200 OK");
                 out.println("Server: Java HTTP Server from Arne");
@@ -223,6 +226,8 @@ public class HTTPServer implements Runnable {
                 out.println("Content-type: json");
                 out.println();
                 out.flush();
+                dataOut.write(0xFF);
+                dataOut.flush();
             } catch (IOException e) {
                 e.printStackTrace();
             }
