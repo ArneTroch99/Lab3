@@ -3,11 +3,9 @@ import java.io.*;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-class HttpClient<T>{
+class HttpClient{
 	
 	private HttpURLConnection con;
-	private Class<T> tClass;
-
 
 	private void openConnection(String address, String HttpMethod) throws Exception{
 
@@ -18,7 +16,7 @@ class HttpClient<T>{
 		con.setReadTimeout(5000);
 	}
 
-	private T getResponse(Class<t> tclass){
+	private Account getResponse() throws Exception{
 		
 		BufferedReader in = new BufferedReader(
   		new InputStreamReader(con.getInputStream()));
@@ -34,21 +32,44 @@ class HttpClient<T>{
 		ObjectMapper mapper = new ObjectMapper();
 
 		// convert JSON string to `JsonNode`
-		T object = mapper.readValue(content.toString(), tclass);
+		Account object = mapper.readValue(content.toString(), Account.class);
 		return object;
 	}
+
+	private int sendAccount(Account account) throws Exception{
+		ObjectMapper objectMapper = new ObjectMapper();
+		String jsonInputString = objectMapper.writeValueAsString(account);
+
+		con.setRequestProperty("Content-Type", "application/json; utf-8");
+		con.setDoOutput(true);
+		
+		try(OutputStream os = con.getOutputStream()) {
+ 		byte[] input = jsonInputString.getBytes("utf-8");
+    		os.write(input, 0, input.length);           
+		}
+		return con.getResponseCode();	
+	} 
 
 	private void closeConnection() throws Exception{
 		con.disconnect();
 	}
 
-	public T get(String address) throws Exception{
+	public Account get(String address) throws Exception{
 		openConnection(address, "GET");
 		
-		T obj = getResponse(tClass);
+		Account account = getResponse();
 		closeConnection();
-		return obj;
+		return account;
 	}
+
+	public void post(String address, Account account)throws Exception{
+		openConnection(address, "POST");
+		int error = sendAccount(account);
+		closeConnection();
+		
+		if (error == 200){System.out.println("File sucesfully added");return;}
+		System.out.println("File not added! Code: "+error);
+	}	
 }
 	
 
