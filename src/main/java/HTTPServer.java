@@ -107,10 +107,15 @@ public class HTTPServer implements Runnable {
                             content.append(inputLine);
                         }
 
-                        System.out.println(content.toString().split("\\{")[1]);
+                        int i = 0;
+                        while(content.charAt(i) != '{'){
+                            i++;
+                        }
+
+                        System.out.println(content.toString().substring(i));
 
                         try {
-                            Account account = mapper.readValue(content.toString().split("\\{")[1], Account.class);
+                            Account account = mapper.readValue(content.toString().substring(i), Account.class);
                             infoAdd(out, account);
                         } catch (JsonParseException e ){
                             errorMessage(out, "400", "Bad Request");
