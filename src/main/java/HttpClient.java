@@ -3,11 +3,14 @@ import java.io.*;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-class HttpClient{
+class HttpClient<T>{
 	
 	private HttpURLConnection con;
+	private Class<T> tClass;
+
+
 	private void openConnection(String address, String HttpMethod) throws Exception{
-	
+
 		URL url = new URL(address);
 		con = (HttpURLConnection) url.openConnection();
 		con.setRequestMethod(HttpMethod);
@@ -15,7 +18,7 @@ class HttpClient{
 		con.setReadTimeout(5000);
 	}
 
-	private Object getResponse() throws Exception{
+	private T getResponse(Class<t> tclass){
 		
 		BufferedReader in = new BufferedReader(
   		new InputStreamReader(con.getInputStream()));
@@ -31,7 +34,7 @@ class HttpClient{
 		ObjectMapper mapper = new ObjectMapper();
 
 		// convert JSON string to `JsonNode`
-		Object object = mapper.readValue(content.toString(), Object.class);
+		T object = mapper.readValue(content.toString(), tclass);
 		return object;
 	}
 
@@ -39,11 +42,12 @@ class HttpClient{
 		con.disconnect();
 	}
 
-	public Object get(String address) throws Exception{
+	public T get(String address) throws Exception{
 		openConnection(address, "GET");
-		Account account = (Account)getResponse();
+		
+		T obj = getResponse(tClass);
 		closeConnection();
-		return account;
+		return obj;
 	}
 }
 	
