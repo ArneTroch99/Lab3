@@ -97,12 +97,15 @@ public class HTTPServer implements Runnable {
                 case ("add"):
                     new InputStreamReader(connect.getInputStream());
                     String inputLine;
-                    StringBuilder content = new StringBuilder();
+                    StringBuffer content = new StringBuffer();
 
                     while ((inputLine = in.readLine()) != null) {
                         content.append(inputLine);
                     }
 
+                    System.out.println(content.toString());
+
+                    in.close();
                     Account account = mapper.readValue(content.toString(), Account.class);
                     infoAdd(out, account);
                     break;
