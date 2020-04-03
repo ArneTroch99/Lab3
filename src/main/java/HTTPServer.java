@@ -111,7 +111,12 @@ public class HTTPServer implements Runnable {
                             i++;
                         }
 
-                        System.out.println(content.toString().substring(i));
+                        try {
+                            System.out.println(content.toString().substring(i));
+                        } catch (IndexOutOfBoundsException e){
+                            System.out.println(content);
+                            errorMessage(out, dataOut, "400", "Bad Request");
+                        }
 
                         try {
                             Account account = mapper.readValue(content.toString().substring(i), Account.class);
@@ -120,15 +125,14 @@ public class HTTPServer implements Runnable {
                             errorMessage(out, dataOut, "400", "Bad Request");
                         }
                     }
-
                     break;
                 default:
                     errorMessage(out, dataOut, "400", "Bad Request");
             }
+            threads--;
         } catch (IOException e) {
             e.printStackTrace();
         }
-        threads--;
     }
 
     private void errorMessage(PrintWriter out, OutputStream dataOut, String errorCode, String errorMessage) {
