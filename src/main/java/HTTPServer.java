@@ -113,7 +113,7 @@ public class HTTPServer implements Runnable {
 
                         try {
                             System.out.println(content.toString().substring(i));
-                        } catch (IndexOutOfBoundsException e){
+                        } catch (StringIndexOutOfBoundsException e){
                             System.out.println(content);
                             errorMessage(out, dataOut, "400", "Bad Request");
                         }
