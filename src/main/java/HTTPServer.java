@@ -88,12 +88,12 @@ public class HTTPServer implements Runnable {
             String[] split1 = input.split(" ");
             String[] split2 = split1[1].split("/");
 
-            switch (split2[1].trim()) {
+            switch (split2[1].trim().toLowerCase()) {
                 case ("info"):
-                    infoInput(out, dataOut, split2[2] + ".json");
+                    infoInput(out, dataOut, (split2[2] + ".json").toLowerCase());
                     break;
                 case ("changeBalance"):
-                    infoChangeBalance(out, dataOut, split2[2] + ".json", split2[3]);
+                    infoChangeBalance(out, dataOut, (split2[2] + ".json").toLowerCase(), split2[3].toLowerCase());
                     break;
                 case ("add"):
 
@@ -139,12 +139,12 @@ public class HTTPServer implements Runnable {
         out.println("Content-type: text/plain");
         out.println();
         out.flush();
-        try {
+        /*try {
             dataOut.write(0xFF);
             dataOut.flush();
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     private void infoInput(PrintWriter out, OutputStream dataOut, String account) {
@@ -204,8 +204,8 @@ public class HTTPServer implements Runnable {
                 out.println();
                 out.flush();
                 usedFiles.remove(account);
-                dataOut.write(0xFF);
-                dataOut.flush();
+                /*dataOut.write(0xFF);
+                dataOut.flush();*/
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (InterruptedException e) {
@@ -226,8 +226,8 @@ public class HTTPServer implements Runnable {
                 out.println("Content-type: text/plain");
                 out.println();
                 out.flush();
-                dataOut.write(0xFF);
-                dataOut.flush();
+                /*dataOut.write(0xFF);
+                dataOut.flush();*/
             } catch (IOException e) {
                 e.printStackTrace();
             }
