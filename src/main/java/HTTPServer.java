@@ -1,6 +1,8 @@
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Date;
@@ -95,19 +97,26 @@ public class HTTPServer implements Runnable {
                     infoChangeBalance(out, dataOut, split2[2] + ".json", split2[3]);
                     break;
                 case ("add"):
-                    new InputStreamReader(connect.getInputStream());
-                    String inputLine;
-                    StringBuffer content = new StringBuffer();
 
-                    while ((inputLine = in.readLine()) != null) {
-                        content.append(inputLine);
+                    if (split1[0].equals("POST")) {
+                        new InputStreamReader(connect.getInputStream());
+                        String inputLine;
+                        StringBuffer content = new StringBuffer();
+
+                        while ((inputLine = in.readLine()) != null) {
+                            content.append(inputLine);
+                        }
+
+                        System.out.println(content.toString().split("\\{")[1]);
+
+                        try {
+                            Account account = mapper.readValue(content.toString().split("\\{")[1], Account.class);
+                            infoAdd(out, account);
+                        } catch (JsonParseException e ){
+                            errorMessage(out, "400", "Bad Request");
+                        }
                     }
 
-                    System.out.println(content.toString());
-
-                    in.close();
-                    Account account = mapper.readValue(content.toString(), Account.class);
-                    infoAdd(out, account);
                     break;
                 default:
                     errorMessage(out, "400", "Bad Request");
