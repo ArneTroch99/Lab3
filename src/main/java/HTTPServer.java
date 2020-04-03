@@ -96,7 +96,6 @@ public class HTTPServer implements Runnable {
                     infoChangeBalance(out, dataOut, (split2[2] + ".json").toLowerCase(), split2[3].toLowerCase());
                     break;
                 case ("add"):
-
                     if (split1[0].equals("POST")) {
                         new InputStreamReader(connect.getInputStream());
                         String inputLine;
@@ -112,8 +111,8 @@ public class HTTPServer implements Runnable {
                                 i++;
                             }
                             System.out.println(content.toString().substring(i));
-                        } catch (Exception e){
-                            System.out.println(content);
+                        } catch (Exception e) {
+                            System.out.println("Input: " + content);
                             errorMessage(out, dataOut, "400", "Bad Request");
                         }
 
@@ -226,7 +225,8 @@ public class HTTPServer implements Runnable {
                 out.println("HTTP/1.1 200 OK");
                 out.println("Server: Java HTTP Server from Arne");
                 out.println("Date: " + new Date());
-                out.println("Content-type: text/plain");
+                //out.println("Content-type: text/plain");
+                out.println("Content-length: 0");
                 out.println();
                 out.flush();
                 /*dataOut.write(0xFF);
