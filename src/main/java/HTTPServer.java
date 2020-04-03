@@ -27,24 +27,20 @@ public class HTTPServer implements Runnable {
     public static void main(String[] args) {
         try {
 
-            /*File directory = new File(ACCOUNTFOLDER);
+            File directory = new File(ACCOUNTFOLDER);
             if (!directory.exists()) {
                 directory.mkdir();
-            }
-
-            if (directory.createNewFile()) {
+		System.out.println("Directory created");
+     
                 System.out.println("Creating accounts file...");
                 Account account1 = new Account("Siemen", 0, "Oosterveldaan 3", 17, "Lies");
                 Account account2 = new Account("Arne", 15000, "Korte kopstraat 70", 2, "Cassandra");
                 Account account3 = new Account("Gliesje", 15, "Oosterveldlaan 3", 50, "Yelena");
 
-                mapper.writeValue(new File(ACCOUNTFOLDER, "Siemen.json"), account1);
-                mapper.writeValue(new File(ACCOUNTFOLDER, "Arne.json"), account2);
-                mapper.writeValue(new File(ACCOUNTFOLDER, "Gliesje.json"), account3);
-            } else {
-                System.out.println("Accounts file already exists");
-            }*/
-
+                mapper.writeValue(new File(ACCOUNTFOLDER, "/Siemen.json"), account1);
+                mapper.writeValue(new File(ACCOUNTFOLDER, "/Arne.json"), account2);
+                mapper.writeValue(new File(ACCOUNTFOLDER, "/Gliesje.json"), account3);
+	    }else{System.out.println("Directory already exists");}
             ServerSocket serverConnect = new ServerSocket(PORT);
             System.out.println("Server started.\nListening for connections on port: " + PORT + "...\n");
 

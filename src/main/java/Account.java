@@ -6,6 +6,15 @@ public class Account {
     private int children;
     private String partner;
 
+    
+    public Account(){
+	name = "test";
+	balance = 0;
+	adress = "test";
+	children = 0;
+	partner = "test";
+    }
+
     public Account(String name, int balance, String adress, int children, String partner) {
         this.name = name;
         this.balance = balance;
