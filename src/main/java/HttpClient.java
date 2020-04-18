@@ -6,7 +6,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 class HttpClient{
 	
 	private HttpURLConnection con;
+	private String address;
 
+	public HttpClient(String address){
+		this.address = address;
+	}
+	
 	private void openConnection(String request, String method) throws Exception{
 
 		URL url = new URL(request);
@@ -16,10 +21,11 @@ class HttpClient{
 		con.setReadTimeout(5000);
 	}
 
-	public Account getAccount(String address, String name) throws Exception{
+	public Account getAccount(String name) throws Exception{
 		
 		String request = address + "/getAccount?account="+name;
-		openConnection(address, "GET");
+		openConnection(request, "GET");
+
 		BufferedReader in = new BufferedReader(
   		new InputStreamReader(con.getInputStream()));
 		String inputLine;
@@ -30,32 +36,31 @@ class HttpClient{
 		}
 		
 		in.close();
-		con.close();
+		con.disconnect();
+
 		// create object mapper instance
 		ObjectMapper mapper = new ObjectMapper();
 
-		// convert JSON string to `JsonNode`
+		// convert JSON string to object
 		Account object = mapper.readValue(content.toString(), Account.class);
 		return object;
 	}
 
-	private int sendAccount(Account account) throws Exception{
-		ObjectMapper objectMapper = new ObjectMapper();
-		String jsonInputString = objectMapper.writeValueAsString(account);
-
-		con.setRequestProperty("Content-Type", "application/json; utf-8");
-		//con.setRequestProperty("Accept", "text/plain");
-		con.setDoOutput(true);
-			
-		try(OutputStream os = con.getOutputStream()) {
- 		byte[] input = jsonInputString.getBytes("utf-8");
-    		os.write(input, 0, input.length);           
-		}
-		//con.getInputStream().close();
-		//return con.getResponseCode();
+	public int addAccount(Account account) throws Exception{
+		
+		String request = address + "/addAccount?name="+account.getName()+"&balance="+account.getBalance();
+		openConnection(request, "POST");
+		con.disconnect();
 		return con.getResponseCode();
 	}	
-}
 	
+	public int changeBalance(String name, String type, int amount) throws Exception{
 
+		String request = address + "/changeBalance?account="+name+"&type="+type+"&amount="+String.valueOf(amount);
+		openConnection(request, "PUT");
+		con.disconnect();
+		return con.getResponseCode();
+	}
+	
+}
 
